@@ -5,6 +5,7 @@
 package com.rosan.installer.ui.page.main.settings.preferred.installer.notification
 
 import android.os.Build
+import android.widget.Toast
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -26,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -52,6 +54,13 @@ fun NotificationSettingsPage(useBlur: Boolean, viewModel: NotificationSettingsVi
     val navigator = LocalNavigator.current
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     val capabilityProvider = koinInject<DeviceCapabilityProvider>()
+    val context = LocalContext.current
+
+    LaunchedEffect(viewModel) {
+        viewModel.uiEvents.collect { messageRes ->
+            Toast.makeText(context, messageRes, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
@@ -192,6 +201,21 @@ fun NotificationSettingsPage(useBlur: Boolean, viewModel: NotificationSettingsVi
                             onCheckedChange = {
                                 viewModel.dispatch(
                                     NotificationSettingsAction.ChangeMiIslandOuterGlow(
+                                        it,
+                                    ),
+                                )
+                            },
+                        )
+                    }
+                    item(animatedVisibility = activeStyle == NotificationStyle.MI_ISLAND) {
+                        SwitchWidget(
+                            icon = AppIcons.RootMethod,
+                            title = stringResource(id = R.string.lab_mi_island_remove_whitelist),
+                            description = stringResource(id = R.string.lab_mi_island_remove_whitelist_desc),
+                            checked = uiState.focusWhitelistRemoved,
+                            onCheckedChange = {
+                                viewModel.dispatch(
+                                    NotificationSettingsAction.ChangeFocusWhitelistRemoved(
                                         it,
                                     ),
                                 )

@@ -3,16 +3,27 @@
 package com.rosan.installer.framework.privileged.provider
 
 import android.content.ComponentName
+import android.os.SystemProperties
 import com.rosan.installer.domain.device.provider.DeviceCapabilityProvider
 import com.rosan.installer.domain.privileged.provider.AppOpsProvider
+import com.rosan.installer.domain.privileged.provider.ShellExecutionProvider
 import com.rosan.installer.domain.settings.model.config.Authorizer
+import com.rosan.installer.domain.settings.model.config.ConfigModel
+import com.rosan.installer.domain.settings.model.config.InstallMode
 import com.rosan.installer.framework.privileged.core.execution.authorization.getSpecialAuth
 import com.rosan.installer.framework.privileged.core.execution.dispatcher.useDirectPrivileged
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
-class AppOpsProviderImpl(private val capabilityProvider: DeviceCapabilityProvider) : AppOpsProvider {
+class AppOpsProviderImpl(
+    private val capabilityProvider: DeviceCapabilityProvider,
+    private val shellExecutionProvider: ShellExecutionProvider,
+) : AppOpsProvider {
+    private companion object {
+        const val FOCUS_WHITELIST_PROPERTY = "persist.sys.feature.xms.switcher"
+    }
+
     override suspend fun setDefaultInstaller(
         authorizer: Authorizer,
         customizeAuthorizer: String,
@@ -64,6 +75,32 @@ class AppOpsProviderImpl(private val capabilityProvider: DeviceCapabilityProvide
                     throw e
                 }
             }
+        }
+    }
+
+    override fun isFocusNotificationWhitelistRemoved(): Boolean = SystemProperties.getBoolean(FOCUS_WHITELIST_PROPERTY, false)
+
+    override suspend fun setFocusNotificationWhitelistRemoved(removed: Boolean) {
+        withContext(Dispatchers.IO) {
+            val value = if (removed) "true" else "false"
+            val config = ConfigModel(
+                description = "",
+                authorizer = Authorizer.Root,
+                customizeAuthorizer = "",
+                installMode = InstallMode.Dialog,
+                installer = null,
+            )
+            val output = shellExecutionProvider.executeCommandArray(
+                config,
+                arrayOf("setprop", FOCUS_WHITELIST_PROPERTY, value),
+            )
+            check(!output.startsWith("Exit Code")) {
+                "Failed to set $FOCUS_WHITELIST_PROPERTY=$value: $output"
+            }
+            check(SystemProperties.getBoolean(FOCUS_WHITELIST_PROPERTY, false) == removed) {
+                "Property $FOCUS_WHITELIST_PROPERTY did not update to $value"
+            }
+            Timber.i("Focus notification whitelist removed=%s", removed)
         }
     }
 

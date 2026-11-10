@@ -9,4 +9,5 @@ sealed interface NotificationSettingsAction {
     data class ChangeMiIslandBypassRestriction(val bypass: Boolean) : NotificationSettingsAction
     data class ChangeMiIslandOuterGlow(val glow: Boolean) : NotificationSettingsAction
     data class ChangeMiIslandBlockingInterval(val ms: Int) : NotificationSettingsAction
+    data class ChangeFocusWhitelistRemoved(val removed: Boolean) : NotificationSettingsAction
 }

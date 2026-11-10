@@ -10,6 +10,7 @@ data class NotificationSettingsState(
     val successAutoClearSeconds: Int = 10,
     val showDialogOnPress: Boolean = false,
     val miIslandBlockingInterval: Int = 100,
+    val focusWhitelistRemoved: Boolean = false,
 ) {
     val currentStyle: NotificationStyle
         get() = when {

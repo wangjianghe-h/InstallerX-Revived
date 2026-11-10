@@ -7,4 +7,6 @@ import com.rosan.installer.domain.settings.model.config.Authorizer
 interface PrivilegedProvider {
     suspend fun setAdbVerify(authorizer: Authorizer, customizeAuthorizer: String, enabled: Boolean)
     suspend fun setDefaultInstaller(authorizer: Authorizer, customizeAuthorizer: String, lock: Boolean)
+    suspend fun isFocusNotificationWhitelistRemoved(): Boolean
+    suspend fun setFocusNotificationWhitelistRemoved(removed: Boolean)
 }

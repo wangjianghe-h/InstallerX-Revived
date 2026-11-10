@@ -4,19 +4,45 @@ package com.rosan.installer.ui.page.main.settings.preferred.installer.notificati
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rosan.installer.R
+import com.rosan.installer.domain.settings.provider.PrivilegedProvider
 import com.rosan.installer.domain.settings.repository.AppSettingsRepository
 import com.rosan.installer.domain.settings.repository.BooleanSetting
 import com.rosan.installer.domain.settings.repository.IntSetting
 import com.rosan.installer.domain.settings.usecase.settings.UpdateSettingUseCase
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
-class NotificationSettingsViewModel(appSettingsRepo: AppSettingsRepository, private val updateSetting: UpdateSettingUseCase) : ViewModel() {
+class NotificationSettingsViewModel(
+    appSettingsRepo: AppSettingsRepository,
+    private val updateSetting: UpdateSettingUseCase,
+    private val privilegedProvider: PrivilegedProvider,
+) : ViewModel() {
 
-    val state: StateFlow<NotificationSettingsState> = appSettingsRepo.preferencesFlow.map { prefs ->
+    private val focusWhitelistRemoved = MutableStateFlow(false)
+    private val _uiEvents = MutableSharedFlow<Int>(extraBufferCapacity = 1)
+    val uiEvents: SharedFlow<Int> = _uiEvents.asSharedFlow()
+
+    init {
+        viewModelScope.launch {
+            focusWhitelistRemoved.value = runCatching {
+                privilegedProvider.isFocusNotificationWhitelistRemoved()
+            }.getOrDefault(false)
+        }
+    }
+
+    val state: StateFlow<NotificationSettingsState> = combine(
+        appSettingsRepo.preferencesFlow,
+        focusWhitelistRemoved,
+    ) { prefs, whitelistRemoved ->
         NotificationSettingsState(
             showLiveActivity = prefs.showLiveActivity,
             showMiIsland = prefs.useMiIsland,
@@ -25,6 +51,7 @@ class NotificationSettingsViewModel(appSettingsRepo: AppSettingsRepository, priv
             successAutoClearSeconds = prefs.notificationSuccessAutoClearSeconds,
             showDialogOnPress = prefs.showDialogWhenPressingNotification,
             miIslandBlockingInterval = prefs.useMiIslandBlockingIntervalMs,
+            focusWhitelistRemoved = whitelistRemoved,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -71,6 +98,18 @@ class NotificationSettingsViewModel(appSettingsRepo: AppSettingsRepository, priv
 
             is NotificationSettingsAction.ChangeMiIslandBlockingInterval -> viewModelScope.launch {
                 updateSetting(IntSetting.ShowMiIslandBlockingInterval, action.ms)
+            }
+
+            is NotificationSettingsAction.ChangeFocusWhitelistRemoved -> viewModelScope.launch {
+                runCatching {
+                    privilegedProvider.setFocusNotificationWhitelistRemoved(action.removed)
+                }.onSuccess {
+                    focusWhitelistRemoved.value = action.removed
+                    _uiEvents.emit(R.string.lab_mi_island_remove_whitelist_applied)
+                }.onFailure { e ->
+                    Timber.e(e, "Failed to change focus notification whitelist state")
+                    _uiEvents.emit(R.string.lab_mi_island_remove_whitelist_failed)
+                }
             }
         }
     }

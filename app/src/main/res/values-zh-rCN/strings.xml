@@ -972,6 +972,10 @@
     <string name="lab_mi_island_bypass_restriction_desc">绕过超级岛系统签名验证限制</string>
     <string name="lab_mi_island_outer_glow">外发光效果</string>
     <string name="lab_mi_island_outer_glow_desc">为灵动岛边缘添加类似系统应用的外发光特效</string>
+    <string name="lab_mi_island_remove_whitelist">移除焦点通知白名单（Root）</string>
+    <string name="lab_mi_island_remove_whitelist_desc">写入 HyperOS 隐藏系统属性，让所有应用无需加入小米白名单也能显示焦点通知和超级岛。需要 Root，且会影响整个系统；重启系统界面或设备后生效。</string>
+    <string name="lab_mi_island_remove_whitelist_applied">白名单状态已更新，重启系统界面或设备后生效。</string>
+    <string name="lab_mi_island_remove_whitelist_failed">修改焦点通知白名单失败，需要 Root 权限。</string>
     <string name="dialog_settings">对话框设置</string>
     <string name="dialog_settings_desc">自定义对话框的外观和行为</string>
     <string name="priv_page_what_is_this_title">这是什么？</string>

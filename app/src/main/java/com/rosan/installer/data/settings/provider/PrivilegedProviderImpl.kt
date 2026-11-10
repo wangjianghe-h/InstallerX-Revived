@@ -24,4 +24,14 @@ class PrivilegedProviderImpl(private val context: Context, private val appOpsPro
             appOpsProvider.setDefaultInstaller(authorizer, customizeAuthorizer, component, lock)
         }
     }
+
+    override suspend fun isFocusNotificationWhitelistRemoved(): Boolean = withContext(Dispatchers.IO) {
+        appOpsProvider.isFocusNotificationWhitelistRemoved()
+    }
+
+    override suspend fun setFocusNotificationWhitelistRemoved(removed: Boolean) {
+        withContext(Dispatchers.IO) {
+            appOpsProvider.setFocusNotificationWhitelistRemoved(removed)
+        }
+    }
 }
