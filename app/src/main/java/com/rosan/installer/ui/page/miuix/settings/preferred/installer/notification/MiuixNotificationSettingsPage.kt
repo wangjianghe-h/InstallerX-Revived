@@ -3,6 +3,7 @@
 package com.rosan.installer.ui.page.miuix.settings.preferred.installer.notification
 
 import android.os.Build
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -60,6 +62,13 @@ fun MiuixNotificationSettingsPage(useBlur: Boolean, viewModel: NotificationSetti
     val navigator = LocalNavigator.current
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     val capabilityProvider = koinInject<DeviceCapabilityProvider>()
+    val context = LocalContext.current
+
+    LaunchedEffect(viewModel) {
+        viewModel.uiEvents.collect { messageRes ->
+            Toast.makeText(context, messageRes, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     val scrollBehavior = MiuixScrollBehavior()
 
@@ -226,6 +235,21 @@ fun MiuixNotificationSettingsPage(useBlur: Boolean, viewModel: NotificationSetti
                             currentValue = uiState.successAutoClearSeconds,
                             onValueChange = { seconds ->
                                 viewModel.dispatch(NotificationSettingsAction.ChangeAutoClearSeconds(seconds))
+                            },
+                        )
+                    }
+                    // 5. Remove focus notification whitelist (animated visibility)
+                    AnimatedVisibility(
+                        visible = activeStyle == NotificationStyle.MI_ISLAND,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically(),
+                    ) {
+                        MiuixSwitchWidget(
+                            title = stringResource(id = R.string.lab_mi_island_remove_whitelist),
+                            description = stringResource(id = R.string.lab_mi_island_remove_whitelist_desc),
+                            checked = uiState.focusWhitelistRemoved,
+                            onCheckedChange = {
+                                viewModel.dispatch(NotificationSettingsAction.ChangeFocusWhitelistRemoved(it))
                             },
                         )
                     }

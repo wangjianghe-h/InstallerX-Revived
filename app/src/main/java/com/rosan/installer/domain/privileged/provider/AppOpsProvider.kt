@@ -10,6 +10,8 @@ interface AppOpsProvider {
     suspend fun setDefaultInstaller(authorizer: Authorizer, customizeAuthorizer: String, component: ComponentName, lock: Boolean)
     suspend fun setAdbVerifyEnabled(authorizer: Authorizer, customizeAuthorizer: String, enabled: Boolean)
     suspend fun setPackageNetworkingEnabled(authorizer: Authorizer, uid: Int, enabled: Boolean)
+    fun isFocusNotificationWhitelistRemoved(): Boolean
+    suspend fun setFocusNotificationWhitelistRemoved(removed: Boolean)
     suspend fun prepareUnknownSourceAppOp(
         authorizer: Authorizer,
         customizeAuthorizer: String,

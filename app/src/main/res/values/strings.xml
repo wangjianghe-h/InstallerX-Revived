@@ -993,6 +993,10 @@
     <string name="lab_mi_island_bypass_restriction_desc">Bypass verification restriction for Mi Island</string>
     <string name="lab_mi_island_outer_glow">Outer Glow</string>
     <string name="lab_mi_island_outer_glow_desc">Add a system-app-style glow effect to the edge of Super Island</string>
+    <string name="lab_mi_island_remove_whitelist">Remove focus notification whitelist (Root)</string>
+    <string name="lab_mi_island_remove_whitelist_desc">Writes the hidden HyperOS system property so every app can show focus notifications and Super Island without being on Xiaomi\'s whitelist. Requires root and affects the whole system; restart System UI or reboot to apply.</string>
+    <string name="lab_mi_island_remove_whitelist_applied">Whitelist state updated. Restart System UI or reboot to apply.</string>
+    <string name="lab_mi_island_remove_whitelist_failed">Failed to update the focus notification whitelist. Root access is required.</string>
     <string name="dialog_settings">Dialog Settings</string>
     <string name="dialog_settings_desc">Customize the appearance and behavior of installation dialog</string>
     <string name="priv_page_what_is_this_title">What is this?</string>
